@@ -77,16 +77,29 @@ class TCMBImporter
 
     public function fetch(): self
     {
-        try {
-            $fetchUrls = $this->generateFetchUrls();
+        $fetchUrls = $this->generateFetchUrls();
+        $fails = 0;
 
-            $fetchUrls->each(function (TCMBFetchDayRow $row) {
+        $fetchUrls->each(function (TCMBFetchDayRow $row) use (&$fails) {
+            try {
+
                 if (Cache::has(sprintf(self::CACHE_XML_PATTERN, $row->date->format('dmY')))) {
                     $xml = simplexml_load_string(
                         Cache::get(sprintf(self::CACHE_XML_PATTERN, $row->date->format('dmY')))
                     );
                 } else {
-                    $contents = Http::tcmb()->get($row->path)->body();
+                    $response = Http::tcmb()->get($row->path);
+
+                    if ($response->ok() == false) {
+                        $fails++;
+
+                        if ($fails > 3) {
+                            throw new TCMBException($response->body());
+                        }
+                        return true;
+                    }
+
+                    $contents = $response->body();
                     $xml = simplexml_load_string($contents);
                     Cache::put(sprintf(self::CACHE_XML_PATTERN, $row->date->format('dmY')), $contents);
                 }
@@ -97,10 +110,11 @@ class TCMBImporter
                     Carbon::parse($header['Date']),
                     xmlToCollection($xml, 'Currency')
                 ));
-            });
-        } catch (\Exception $exception) {
-            throw new TCMBException($exception->getMessage());
-        }
+            } catch (\Exception $exception) {
+                throw new TCMBException($exception->getMessage());
+            }
+        });
+
 
         return $this;
     }
