@@ -45,6 +45,7 @@ class TCMBDataOfDay
                 'cross_rate_usd' => empty($row['CrossRateUSD']) ? null : $row['CrossRateUSD'],
                 'cross_rate_other' => empty($row['CrossRateOther']) ? null : $row['CrossRateOther'],
                 'unit' => $row['Unit'],
+                'cross_order' => $row['@attributes']['CrossOrder'],
             ], [
                 'date',
                 'code',
