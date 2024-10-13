@@ -6,7 +6,7 @@ import {
     useQuery,
 } from "@tanstack/react-query";
 import { PaginationState } from "@tanstack/react-table";
-import axios from "axios";
+import axios from "@/lib/axios";
 import { useContext, useState, createContext, useEffect } from "react";
 
 const CurrencyQueryContext = createContext({
@@ -79,8 +79,30 @@ const CurrencyQueryProviderNonWrapped: React.FC<{
     const { toast } = useToast();
 
     const { data, isLoading, isFetched } = useQuery({
-        queryKey: ["currencies", pagination, dateRange, search],
-        queryFn: () => fetchData(pagination, dateRange, search),
+        queryKey: [
+            "currencies",
+            dateRange.from,
+            dateRange.to,
+            search,
+            pagination,
+        ],
+        queryFn: async () => {
+            try {
+                const response = await fetchData(pagination, dateRange, search);
+
+                return response;
+            } catch (e) {
+                if (axios.isAxiosError(e)) {
+                    toast({
+                        title: "Hata",
+                        description: e.response?.data.message,
+                        variant: "destructive",
+                    });
+                }
+                throw e;
+            }
+        },
+        retry: false,
     });
 
     useEffect(() => {
@@ -99,22 +121,20 @@ const CurrencyQueryProviderNonWrapped: React.FC<{
     }, [dateRange]);
 
     return (
-        <QueryClientProvider client={new QueryClient()}>
-            <CurrencyQueryContext.Provider
-                value={{
-                    data,
-                    isLoading,
-                    isFetched,
-                    setPagination,
-                    pagination,
-                    dateRange,
-                    setDateRange,
-                    onSearch: (text: string) => setSearch(text),
-                }}
-            >
-                {children}
-            </CurrencyQueryContext.Provider>
-        </QueryClientProvider>
+        <CurrencyQueryContext.Provider
+            value={{
+                data,
+                isLoading,
+                isFetched,
+                setPagination,
+                pagination,
+                dateRange,
+                setDateRange,
+                onSearch: (text: string) => setSearch(text),
+            }}
+        >
+            {children}
+        </CurrencyQueryContext.Provider>
     );
 };
 
