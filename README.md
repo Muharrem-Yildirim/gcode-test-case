@@ -19,9 +19,9 @@ This project gets currencies from TCMB API and stores in local database. In the 
 ## Screenshots
 
 <div style="display: flex; justify-content: space-between;">
-    <img src="https://github.com/Muharrem-Yildirim/gcode-test-case/blob/main/screenshots/screenshot_1.png?raw=true" style="width: 30%; height: auto;"/>
-    <img src="https://github.com/Muharrem-Yildirim/gcode-test-case/blob/main/screenshots/screenshot_2.png?raw=true"  style="width: 30%; height: auto;"/>
-    <img src="https://github.com/Muharrem-Yildirim/gcode-test-case/blob/main/screenshots/screenshot_3.png?raw=true" style="width: 30%; height: auto;"/>
+    <img src="https://github.com/Muharrem-Yildirim/gcode-test-case/blob/main/screenshots/screenshot_1.png?raw=true" style="width: 50%; height: auto;"/>
+    <img src="https://github.com/Muharrem-Yildirim/gcode-test-case/blob/main/screenshots/screenshot_2.png?raw=true"  style="width: 50%; height: auto;"/>
+    <img src="https://github.com/Muharrem-Yildirim/gcode-test-case/blob/main/screenshots/screenshot_3.png?raw=true" style="width: 50%; height: auto;"/>
 </div>
 
 ## What I used in this project
