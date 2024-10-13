@@ -8,6 +8,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -40,7 +41,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (Exception $e, Request $request) {
-            if ($request->is('api/*')) {
+            if ($request->is('api/*') && !$e instanceof ValidationException) {
                 Log::channel('daily')->error($e);
 
                 return response()->json([
