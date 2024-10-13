@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Console\Commands\ImportTodayCommand;
+use App\Models\Currency;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
@@ -11,6 +12,12 @@ use Tests\TestCase;
 
 class CurrencyControllerApiTest extends TestCase
 {
+    public function setUp(): void
+    {
+        parent::setUp();
+        date_default_timezone_set('Europe/Istanbul');
+    }
+
     #[Test]
     public function it_returns_200(): void
     {
@@ -27,14 +34,17 @@ class CurrencyControllerApiTest extends TestCase
     public function it_returns_currencies_correct_format(): void
     {
         // 1. Arrange
-        $date = Carbon::create(2024, 10, 10);
+        $date = Carbon::create(2024, 10, 10)->timezone('Europe/Istanbul');
         Carbon::setTestNow(testNow: $date);
 
         // 2. Act
-        $this->artisan('app:import-today');
-        $response = $this->getJson(route('currencies.index'));
+        $this->artisan('app:import-today')->assertSuccessful();
+        $response = $this->getJson(route('currencies.index', [
+            'start_date' => $date->utc()->format('Y-m-d'),
+        ]));
 
         // 3. Assert
+        $response->assertOk();
         $response->assertJsonStructure([
             'data' => [
                 [
