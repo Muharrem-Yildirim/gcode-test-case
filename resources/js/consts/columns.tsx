@@ -1,4 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
+import moment from "moment/min/moment-with-locales";
+
+moment.locale("tr");
 
 export type Currency = {
     id: string;
@@ -156,7 +159,10 @@ const columns: CustomColumnDef<Currency>[] = [
                 <span className="!leading-3 !text-xs">Date</span>
             </div>
         ),
-        cell: (info) => info.getValue(),
+        cell: (info) =>
+            moment(info.getValue() as string)
+                .utc(true)
+                .format("ll"),
     },
 ];
 
