@@ -4,6 +4,7 @@ export default function Home() {
     return (
         <>
             <Head title="Home" />
+            Hello world!
         </>
     );
 }
