@@ -11,6 +11,8 @@ This project gets currencies from TCMB API and stores in local database. In the 
 3. Run `npm run build`
 4. Run `bash ./vendor/bin/sail up -d` or without sail `php artisan migrate && php artisan serve --port 8000`
 
+Optionally you can run `php artisan app:import-today` to import today's data.
+
 ## Running Tests
 
 1. Run `php artisan key:generate --env=testing`
