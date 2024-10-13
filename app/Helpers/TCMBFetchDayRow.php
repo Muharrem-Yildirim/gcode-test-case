@@ -8,16 +8,16 @@ class TCMBFetchDayRow
 {
     public function __construct(
         public Carbon $date,
-        public string $url,
+        public string $path,
     ) {}
 
     public function __toString(): string
     {
-        return sprintf("%s, %s", $this->date, $this->url);
+        return sprintf("%s, %s", $this->date, $this->path);
     }
 
-    public static function make(Carbon $date, string $url): self
+    public static function make(Carbon $date, string $path): self
     {
-        return new self($date, $url);
+        return new self($date, $path);
     }
 }
