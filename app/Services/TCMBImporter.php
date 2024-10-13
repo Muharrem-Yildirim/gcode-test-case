@@ -3,16 +3,18 @@
 namespace App\Services;
 
 use App\Enums\TCMBDebugMessageTypesEnum;
+use App\Exceptions\TCMBException;
 use App\Helpers\TCMBDataOfDay;
 use App\Helpers\TCMBDebugMessage;
 use App\Helpers\TCMBFetchDayRow;
+use Illuminate\Http\Client\Pool;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 
 class TCMBImporter
 {
-    public  const API_URL = 'https://www.tcmb.gov.tr/kurlar/';
     public  const CACHE_XML_PATTERN = 'tcmb_xml_%s';
     private Collection $debugMessages;
     private Collection $fetchedTCMBData;
@@ -58,11 +60,15 @@ class TCMBImporter
             }
 
 
-            $finalUrl = self::API_URL . '/' . $date->format('Ym') . '/' . $date->format('dmY') . '.xml';
+            if ($date->isToday()) {
+                $path = '/today.xml';
+            } else {
+                $path = '/' . $date->format('Ym') . '/' . $date->format('dmY') . '.xml';
+            }
 
             $fetchUrls->push(TCMBFetchDayRow::make(
-                $date,
-                $finalUrl
+                date: $date,
+                path: $path
             ));
         }
 
@@ -71,26 +77,30 @@ class TCMBImporter
 
     public function fetch(): self
     {
-        $fetchUrls = $this->generateFetchUrls();
+        try {
+            $fetchUrls = $this->generateFetchUrls();
 
-        $fetchUrls->each(function (TCMBFetchDayRow $row) {
-            if (Cache::has(sprintf(self::CACHE_XML_PATTERN, $row->date->format('dmY')))) {
-                $xml = simplexml_load_string(
-                    Cache::get(sprintf(self::CACHE_XML_PATTERN, $row->date->format('dmY')))
-                );
-            } else {
-                $contents = file_get_contents($row->url);
-                $xml = simplexml_load_string($contents);
-                Cache::put(sprintf(self::CACHE_XML_PATTERN, $row->date->format('dmY')), $contents);
-            }
+            $fetchUrls->each(function (TCMBFetchDayRow $row) {
+                if (Cache::has(sprintf(self::CACHE_XML_PATTERN, $row->date->format('dmY')))) {
+                    $xml = simplexml_load_string(
+                        Cache::get(sprintf(self::CACHE_XML_PATTERN, $row->date->format('dmY')))
+                    );
+                } else {
+                    $contents = Http::tcmb()->get($row->path)->body();
+                    $xml = simplexml_load_string($contents);
+                    Cache::put(sprintf(self::CACHE_XML_PATTERN, $row->date->format('dmY')), $contents);
+                }
 
-            $header = xmlToCollection($xml, '@attributes');
+                $header = xmlToCollection($xml, '@attributes');
 
-            $this->fetchedTCMBData->push(TCMBDataOfDay::make(
-                Carbon::parse($header['Date']),
-                xmlToCollection($xml, 'Currency')
-            ));
-        });
+                $this->fetchedTCMBData->push(TCMBDataOfDay::make(
+                    Carbon::parse($header['Date']),
+                    xmlToCollection($xml, 'Currency')
+                ));
+            });
+        } catch (\Exception $exception) {
+            throw new TCMBException($exception->getMessage());
+        }
 
         return $this;
     }
