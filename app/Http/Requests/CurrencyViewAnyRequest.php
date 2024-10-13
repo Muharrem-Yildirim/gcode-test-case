@@ -16,6 +16,7 @@ class CurrencyViewAnyRequest extends FormRequest
         return [
             'start_date' => ['date'],
             'end_date' => ['date'],
+            'search' => ['string', 'max:255', 'nullable']
         ];
     }
 }
