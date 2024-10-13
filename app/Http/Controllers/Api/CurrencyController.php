@@ -8,6 +8,8 @@ use App\Http\Requests\CurrencyViewAnyRequest;
 use App\Http\Resources\CurrencyResource;
 use App\Models\Currency;
 use App\Services\TCMBImporter;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class CurrencyController extends Controller
@@ -16,8 +18,15 @@ class CurrencyController extends Controller
     {
         $startDate = request()->date('start_date') ?? now();
 
-        $importer->setDateRange($startDate, $request->date('end_date') ?? null)->fetch()->store();
+        if ($startDate->isWeekend()) {
+            if ($startDate->isSunday()) {
+                $startDate = $startDate->subDays(2);
+            } else {
+                $startDate = $startDate->subDays(1);
+            }
+        }
 
+        $importer->setDateRange($startDate, $request->date('end_date') ?? null)->fetch()->store();
         $currencies = Currency::query();
 
         if ($request->has('end_date') && $request->end_date !== null) {
@@ -28,7 +37,7 @@ class CurrencyController extends Controller
             $currencies->whereDate('date', '=', $startDate);
         }
 
-        if (request()->has('search') && $request->search !== null) {
+        if (request()->has('search') && !empty($request->search)) {
             $search = request('search');
 
             $currencies->where(function ($query) use ($search) {
