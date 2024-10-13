@@ -10,6 +10,5 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote')->hourly();
 
-Artisan::command('app:import-today', function () {
-    $this->info("Importing TCMB data for today");
-})->purpose('Import Today')->daily();
+
+Schedule::command('app:import-today')->daily();
