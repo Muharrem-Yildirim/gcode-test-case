@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->integer('cross_order')->nullable();
             $table->string('code');
-            $table->integer('unit')->nullable();
+            $table->integer('unit');
             $table->string('name');
             $table->decimal('forex_buying', 10, 4)->nullable();
             $table->decimal('forex_selling', 10, 4)->nullable();
@@ -26,6 +26,7 @@ return new class extends Migration
             $table->date('date');
 
             $table->unique(['code', 'date']);
+            $table->index(['code', 'date']);
             $table->timestamps();
         });
     }
