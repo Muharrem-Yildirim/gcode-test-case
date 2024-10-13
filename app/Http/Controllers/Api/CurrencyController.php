@@ -16,7 +16,7 @@ class CurrencyController extends Controller
         $startDate = request()->date('start_date') ?? now();
 
         try {
-            $importer->setDateRange($startDate, null)->fetch()->store();
+            $importer->setDateRange($startDate, $request->date('end_date') ?? null)->fetch()->store();
         } catch (\Throwable $e) {
             if ($e instanceof TCMBException) {
                 return response()->json(['message' => 'TCMB Error'], 500);
@@ -26,9 +26,9 @@ class CurrencyController extends Controller
         $currencies = Currency::whereDate('date', '>=', $startDate);
 
         if ($request->has('end_date') && $request->end_date !== null) {
-            $currencies->whereDate('date', '<=', $request->date('end_date', now()));
+            $currencies->whereDate('date', '<=', $request->date('end_date') ?? now());
         }
 
-        return CurrencyResource::collection($currencies->paginate(10));
+        return CurrencyResource::collection($currencies->paginate(10))->additional(['debug_messages' => $importer->debugMessages]);
     }
 }
