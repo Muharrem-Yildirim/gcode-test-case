@@ -28,8 +28,6 @@ jobs:
         run: npm install
       - name: Build vite
         run: npm run build
-      - name: Run migrations
-        run: php artisan migrate
       - name: Generate key
         run: php artisan key:generate --env=testing
       - name: Directory Permissions
