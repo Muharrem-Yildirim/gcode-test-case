@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Console\Commands\ImportTodayCommand;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use PHPUnit\Framework\Attributes\Test;
@@ -67,7 +68,7 @@ class CurrencyControllerApiTest extends TestCase
     {
         // 1. Arrange
         $notValidDate  = 'this-is-not-correct-date';
-        $validDate = Carbon::now();
+        $validDate = Carbon::now()->subDays(value: 30)->startOfWeek(CarbonInterface::MONDAY);
 
         // 2. Act
         $responseNotValid = $this->getJson(route('currencies.index', [
@@ -85,11 +86,17 @@ class CurrencyControllerApiTest extends TestCase
             'end_date' => null,
         ]));
 
+        $responseValidWithEndDate = $this->getJson(route('currencies.index', [
+            'start_date' => $validDate,
+            'end_date' => $validDate->clone()->addDays(2),
+        ]));
+
         // 3. Assert
         $responseNotValid->assertJsonValidationErrorFor('start_date');
         $responseNotValid->assertJsonValidationErrorFor('end_date');
 
         $responseValid->assertOk();
         $responseValidWithoutEndDate->assertOk();
+        $responseValidWithEndDate->assertOk();
     }
 }
