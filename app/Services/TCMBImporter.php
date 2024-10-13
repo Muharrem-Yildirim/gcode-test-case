@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Http;
 class TCMBImporter
 {
     public  const CACHE_XML_PATTERN = 'tcmb_xml_%s';
-    private Collection $debugMessages;
+    public Collection $debugMessages;
     private Collection $fetchedTCMBData;
 
 
@@ -50,12 +50,12 @@ class TCMBImporter
             $date = $this->startDate->clone()->addDays($i);
 
             if ($date->isWeekend()) {
-                $this->debugMessages->push(new TCMBDebugMessage(TCMBDebugMessageTypesEnum::WEEKEND, $date));
+                $this->debugMessages->push(new TCMBDebugMessage(TCMBDebugMessageTypesEnum::WEEKEND, $date->format('Y-m-d')));
                 continue;
             }
 
             if ($date->isAfter(Carbon::now())) {
-                $this->debugMessages->push(new TCMBDebugMessage(TCMBDebugMessageTypesEnum::AFTER_TODAY, $date));
+                $this->debugMessages->push(new TCMBDebugMessage(TCMBDebugMessageTypesEnum::AFTER_TODAY, $date->format('Y-m-d')));
                 break;
             }
 
